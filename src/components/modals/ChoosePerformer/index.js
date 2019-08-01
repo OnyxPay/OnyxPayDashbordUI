@@ -12,6 +12,15 @@ import { convertAmountToStr } from "utils/number";
 import { handleBcError } from "api/network";
 const { Option } = Select;
 
+function convertAsset(assetAmount, assetSymbol, exchangeRates) {
+	try {
+		const rate = exchangeRates.find(rate => rate.symbol === assetSymbol);
+		return (rate.buy / 10 ** 8) * assetAmount;
+	} catch (e) {
+		return 0;
+	}
+}
+
 class ChoosePerformer extends Component {
 	state = this.getInitialState();
 
@@ -157,14 +166,17 @@ class ChoosePerformer extends Component {
 	};
 
 	async fetchUsers(opts = {}) {
-		const { user, performer, accountAddress } = this.props;
+		const { user, performer, accountAddress, openedRequestData, rates } = this.props;
 		const { pagination } = this.state;
+		const convertedAmount = convertAsset(openedRequestData.amount, openedRequestData.asset, rates);
 		try {
 			const params = {
 				pageSize: pagination.pageSize,
 				pageNum: pagination.current,
 				role: performer,
 				country: user.countryId,
+				status: "active",
+				consolidated_balance: convertedAmount,
 				...opts,
 			};
 
@@ -289,12 +301,12 @@ class ChoosePerformer extends Component {
 												key="allAgent"
 												onClick={() => this.handleSendAllAgents()}
 												style={{ marginLeft: 10 }}
+												disabled={(users && !users.length) || isSubmitting}
+												loading={isSubmitting}
 											>
 												Send to all agents
 											</Button>
-										) : (
-											""
-										)}
+										) : null}
 									</div>
 								</form>
 							</div>
@@ -310,5 +322,6 @@ export default connect(state => {
 	return {
 		user: state.user,
 		accountAddress: state.wallet.defaultAccountAddress,
+		rates: state.assets.rates,
 	};
 })(ChoosePerformer);

@@ -24,6 +24,7 @@ import { renderPageTitle, aa, parseRequestType, isThisAgentInitiator } from "./c
 import { handleTableChange, getColumnSearchProps } from "./table";
 import { getOpRequests, GET_OPERATION_REQUESTS } from "redux/requests";
 import { handleBcError } from "api/network";
+import Actions from "redux/actions";
 
 const modals = {
 	SEND_REQ_TO_AGENT: "SEND_REQ_TO_AGENT",
@@ -49,7 +50,8 @@ class ActiveRequests extends Component {
 	}
 
 	componentDidMount() {
-		const { location } = this.props;
+		const { location, getExchangeRates } = this.props;
+		getExchangeRates();
 		const values = queryString.parse(location.search);
 		if (values.id) {
 			this.setState({ idParsedFromURL: values.id });
@@ -60,9 +62,10 @@ class ActiveRequests extends Component {
 	}
 
 	componentDidUpdate(prevProps, prevState) {
-		const { location } = this.props;
+		const { location, getExchangeRates } = this.props;
 		if (location.pathname !== prevProps.location.pathname) {
 			this.fetch();
+			getExchangeRates();
 		}
 	}
 
@@ -326,7 +329,7 @@ ActiveRequests = compose(
 	withRouter,
 	connect(
 		mapStateToProps,
-		{ push, getOpRequests }
+		{ push, getOpRequests, getExchangeRates: Actions.assets.getExchangeRates }
 	)
 )(ActiveRequests);
 

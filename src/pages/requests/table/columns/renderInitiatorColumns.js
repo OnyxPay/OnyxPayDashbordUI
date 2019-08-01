@@ -198,6 +198,7 @@ export default function renderInitiatorColumns({
 										onClick={showModal(modals.SEND_REQ_TO_AGENT, {
 											requestId: record.id,
 											isSendingMessage: true,
+											openedRequestData: record,
 										})}
 									>
 										Send to agents
